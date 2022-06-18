@@ -1,61 +1,60 @@
 #include<iostream>
 #include<vector>
 #include<string>
-#include<algorithm>
-#include<cmath>
 #include<chrono>
-#include <climits>
+#include<climits>
 #include<fstream>
 
 using namespace std;
 typedef long long ll;
 #define loop(i,k,n) for((i) = (k); (i) < (n); (i)++)
 #define rloop(i,k,n) for((i) = (k); (i) >= (n); (i)--)
-#define outyes cout << "Yes" << endl  
-#define outno cout << "No" << endl
-#define outans cout << ans << endl
 //const ll mod =  998244353;
 //const ll mod = 1e9+7;
 
 int main()
-{
+{   
+    //定数定義
+    const int max_ansnum = 10000; //発見最大数
+    const int max_ans = 500; //見つける答の最大数(この数値と五乗が符号付き64ビットの最大数の小さい値が実際の最大数になります)
+    string filename = "power5_under" + to_string(max_ans) +".txt"; //出力ファイル名
+    //変数定義
     ll maxnum,maxsum;
-    //ios::sync_with_stdio(false);
-    //cin.tie(nullptr);
-    ll i,j,k,l,m;
-    ll numa=0, ia[10000]={0},ja[10000]={0},ka[10000]={0},la[10000]={0},nowa[10000]={0};
+    ll i,j,k,l;
+    ll numa=0, a[max_ansnum]={0},b[max_ansnum]={0},c[max_ansnum]={0},d[max_ansnum]={0},e[max_ansnum]={0};
     vector<ll> powerfive;
     powerfive.reserve(6300);
-    ll sum, sumback;
-    ll now=1;
-    
+    ll sum;
+    //時間計測開始
     chrono::system_clock::time_point begin;
     begin = std::chrono::system_clock::now();
-    
+    //初期化（あらかじめその数の5乗を記録）
     i=0;
     powerfive.push_back(0);
-    while(powerfive[i] < LLONG_MAX/4){i++; powerfive.push_back(i*i*i*i*i);}
+    while(max_ans > i && powerfive[i] < LLONG_MAX/4){i++; powerfive.push_back(i*i*i*i*i);}
     maxnum = i;
     bool is_over=false;
     ll inst=1;
-    while(!is_over){
-        i++; 
+    while(max_ans > i && !is_over){
+        i++;
         inst=1;
         loop(k,0,4){
             inst *= i; 
             if(inst > LLONG_MAX/i){
-                is_over = true; 
+                is_over = true;
+                i--; 
                 break;
             }
         }
         inst *= i;
         powerfive.push_back(inst);
     }
-    maxsum =i-1;
+    maxsum =i;
 
     while(powerfive[maxnum] < powerfive[maxsum]/4){
         maxsum--;
     }
+    //探索開始
     std::cout << "maxnum:" << maxnum <<" maxsum:" << maxsum << "\n";
     std::cout << "begin" << "\n";
     ll sumj,sumjk,sumjkl,last,sumlast;
@@ -81,19 +80,38 @@ int main()
                         if(sumlast > 0) break;
                         if(!sumlast) {
                             cout << "found";
-                            ia[numa] = j; 
-                            ja[numa] = k;
-                            ka[numa] = l;
-                            la[numa] = last;
-                            nowa[numa] = i; 
+                            a[numa] = j; 
+                            b[numa] = k;
+                            c[numa] = l;
+                            d[numa] = last;
+                            e[numa] = i; 
                             numa++;
-                            if(numa == 10000){
-                                cout << "out of stock-----"<< endl;
+                            //発見数が上限を超えた場合までの結果すべて出力し強制終了
+                            if(numa == max_ansnum){
+                                ofstream writing_file;
+                                string text;
+                                writing_file.open(filename, std::ios::out);
+                                cout << endl;                            
+                                text = "out of stock-----\n";
+                                cout << text;
+                                writing_file << text;
                                 chrono::system_clock::time_point end;
                                 end = std::chrono::system_clock::now();
-                                cout << "発見個数：" << numa <<"個" << " " << "所要時間：" << chrono::duration_cast<std::chrono::minutes>(end-begin).count() << "分" << endl;
-                                loop(m,0,numa) cout << ia[m] << "^5+" << ja[m] << "^5+" << ka[m] << "^5+" << la[m] << "^5=" << nowa[m] << "^5"  << "\n";                            
-                                cout << "-----stop produceing in \"" << i  << "\""<< endl;
+                                text = "numberunder:" + to_string(maxsum) + "\n";
+                                writing_file << text;
+                                cout << text;
+                                text = "発見個数：" + to_string(numa) + "個" + " " + "所要時間：" + to_string(chrono::duration_cast<std::chrono::minutes>(end-begin).count()) + "分\n";
+                                writing_file << text;
+                                cout << text;
+                                loop(i,0,numa){
+                                    text = to_string(a[i]) + "^5+" + to_string(b[i]) + "^5+" + to_string(c[i]) + "^5+" + to_string(d[i]) + "^5=" + to_string(e[i]) + "^5"  + "\n";
+                                    writing_file << text;
+                                    cout << text;
+                                }
+                                text = "-----stop produceing in \"" + to_string(i)  + "\"\n";
+                                writing_file << text;
+                                cout << text;
+                                writing_file.close();
                                 abort();
                             }               
                         }
@@ -103,19 +121,24 @@ int main()
             }
         }
     }
-    
-    std::ofstream writing_file;
-    std::string filename = "sample.txt";
+    //結果出力
+    ofstream writing_file;
     writing_file.open(filename, std::ios::out);
-    std::cout << endl;
+    cout << endl;
     chrono::system_clock::time_point end;
     end = std::chrono::system_clock::now();
-    writing_file << "numberunder:" << maxsum << "\n";
-    writing_file << "発見個数：" << numa <<"個" << " " << "所要時間：" << chrono::duration_cast<std::chrono::minutes>(end-begin).count() << "分" << endl;
-    loop(i,0,numa) writing_file << ia[i] << "^5+" << ja[i] << "^5+" << ka[i] << "^5+" << la[i] << "^5=" << nowa[i] << "^5"  << "\n";
-    std::cout << "発見個数：" << numa <<"個" << " " << "所要時間：" << chrono::duration_cast<std::chrono::minutes>(end-begin).count() << "分" << endl;
-    loop(i,0,numa) std::cout << ia[i] << "^5+" << ja[i] << "^5+" << ka[i] << "^5+" << la[i] << "^5=" << nowa[i] << "^5"  << "\n";
-
+    string text;
+    text = "numberunder:" + to_string(maxsum) + "\n";
+    writing_file << text;
+    cout << text;
+    text = "発見個数：" + to_string(numa) + "個" + " " + "所要時間：" + to_string(chrono::duration_cast<std::chrono::minutes>(end-begin).count()) + "分\n";
+    writing_file << text;
+    cout << text;
+    loop(i,0,numa){
+        text = to_string(a[i]) + "^5+" + to_string(b[i]) + "^5+" + to_string(c[i]) + "^5+" + to_string(d[i]) + "^5=" + to_string(e[i]) + "^5"  + "\n";
+        writing_file << text;
+        cout << text;
+    } 
     writing_file.close();
 
     return 0;
