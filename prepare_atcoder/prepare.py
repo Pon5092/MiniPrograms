@@ -20,7 +20,7 @@ print("出力ファイルディレクトリ："+to)
 print("テンプレートファイル："+templates)
 print("です")
 numbers = input("番号を入力してください：")
-locate = to + typ + " " + numbers
+locate = to + typ + numbers
 try:
     os.mkdir(locate)
 except FileExistsError as e:
